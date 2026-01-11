@@ -13,7 +13,6 @@ import logging
 from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from turtle import delay
 from typing import Deque, Optional
 import yaml
 import paho.mqtt.client as mqtt  # New: MQTT client library
