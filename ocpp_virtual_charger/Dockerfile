@@ -12,7 +12,7 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # 2. Install everything your app needs directly
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir --break-system-packages \
     fastapi \
     uvicorn \
     websockets==10.4 \
