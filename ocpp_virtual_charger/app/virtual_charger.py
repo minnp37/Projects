@@ -52,49 +52,6 @@ def load_config():
         print("❌ Critical Error: No configuration file found!")
         exit(1)
     
-async def load_state(self):
-    """Loads the previous state from /data/session_state.json or initializes a new one."""
-    try:
-        if STATE_FILE.exists():
-            with open(STATE_FILE, 'r') as f:
-                state = json.load(f)
-                self.is_charging = state.get("is_charging", False)
-                self.current_transaction_id = state.get("current_transaction_id")
-                self.total_energy_kwh = state.get("total_energy_kwh", 0.0)
-                # Use value from state file, or fallback to HA config if missing
-                self.dummy_power_watts = state.get("dummy_power_watts", initial_dummy_power)
-                self.meter_wh = state.get("meter_wh", 0)
-                log(f"💾 State loaded from {STATE_FILE}")
-        else:
-            log("🆕 No state file found. Initializing fresh state.")
-            # Set defaults based on the HA configuration user just saved
-            self.is_charging = False
-            self.current_transaction_id = None
-            self.total_energy_kwh = 0.0
-            self.dummy_power_watts = initial_dummy_power
-            self.meter_wh = 0 
-            await self.save_state() # Create the file for next time
-    except Exception as e:
-        log(f"⚠️ Error loading state: {e}. Using defaults.")
-
-async def save_state(self):
-    """Saves current state to the persistent /data partition."""
-    try:
-        state = {
-            "is_charging": self.is_charging,
-            "current_transaction_id": self.current_transaction_id,
-            "total_energy_kwh": self.total_energy_kwh,
-            "dummy_power_watts": self.dummy_power_watts,
-            "meter_wh": self.meter_wh
-        }
-        # Ensure the directory exists (it should, but safety first)
-        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(STATE_FILE, 'w') as f:
-            json.dump(state, f)
-        # log("💾 State saved") # Commented out to reduce log clutter
-    except Exception as e:
-        log(f"⚠️ Error saving state: {e}")
 
 config = load_config()
 # ------------------ CONFIG (edited in config.yaml) ------------------ #
@@ -826,35 +783,37 @@ class VirtualChargePoint(cp):
             self.log(f"⚠️ Resume after reconnect failed: {e}")
 
     async def save_state(self):
+        """Saves current state to the persistent /data partition."""
         try:
             state = {
                 "is_charging": self.is_charging,
                 "current_transaction_id": self.current_transaction_id,
-                "total_energy_kwh": getattr(self, "total_energy_kwh", 0),
+                "total_energy_kwh": getattr(self, "total_energy_kwh", 0.0),
                 "dummy_power_watts": getattr(self, "dummy_power_watts", 1000),
-                "meter_wh": int(self.meter_wh),        # <-- NEW PERSISTED FIELD
+                "meter_wh": int(self.meter_wh),
             }
+            # Ensure /data exists (Crucial for fresh installs)
+            STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
             STATE_FILE.write_text(json.dumps(state))
-            self.log(f"💾 State saved: {state}")
+            # self.log(f"💾 State saved") # Quiet log
         except Exception as e:
             self.log(f"⚠️ Could not save state: {e}")
 
     async def load_state(self):
+        """Loads state or sets defaults."""
         if not STATE_FILE.exists():
-            self.log("ℹ️ No saved session state found.")
+            self.log("ℹ️ No saved session state found. Using defaults.")
+            self.meter_wh = 4066494 # Your starting meter reading
             return
 
         try:
             data = json.loads(STATE_FILE.read_text())
             self.is_charging = data.get("is_charging", False)
             self.current_transaction_id = data.get("current_transaction_id")
-            self.total_energy_kwh = data.get("total_energy_kwh", 0)
+            self.total_energy_kwh = data.get("total_energy_kwh", 0.0)
             self.dummy_power_watts = data.get("dummy_power_watts", 1000)
-
-            # NEW FIELD HERE
-            self.meter_wh = data.get("meter_wh", 4066494)  # fallback to real initial
-
-            self.log(f"📂 State loaded: {data}")
+            self.meter_wh = data.get("meter_wh", 4066494)
+            self.log(f"📂 State loaded from {STATE_FILE}")
         except Exception as e:
             self.log(f"⚠️ Could not load state: {e}")
 
