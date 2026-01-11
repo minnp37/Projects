@@ -1,0 +1,48 @@
+name: "OCPP Virtual Charger"
+description: "Virtual Charger for OCPP Servers with FastAPI Web UI"
+version: "1.0"
+slug: "ocpp_virtual_charger"
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+ingress: true
+panel_icon: "mdi:ev-station"
+panel_title: "Charger Debug"
+ports:
+  8000/tcp: 8001
+services:
+  - mqtt:need
+
+options:
+  charger:
+    server_url: null
+    chargepoint_id: null
+    password: null
+    vendor: null
+    model: null
+    chargepoint_serial_number: null
+    chargebox_serial_number: null
+    firmware_version: null
+    meter_type: "Internal NON compliant"
+  heartbeat_interval: 10
+  log_lines: 500
+  meter_interval: 60
+  dummy_power_watts: 0
+
+schema:
+  charger:
+    server_url: str
+    chargepoint_id: str
+    password: password
+    vendor: str
+    model: str
+    chargepoint_serial_number: str
+    chargebox_serial_number: str
+    firmware_version: str
+    meter_type: str
+  heartbeat_interval: int(1, 3600)
+  log_lines: int(1, 5000)
+  meter_interval: int(1, 3600)
+  dummy_power_watts: int(0, 7400)
