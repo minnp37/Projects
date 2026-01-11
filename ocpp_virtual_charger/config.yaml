@@ -42,7 +42,7 @@ schema:
     chargebox_serial_number: str
     firmware_version: str
     meter_type: str
-  heartbeat_interval: int(1, 3600)
-  log_lines: int(1, 5000)
-  meter_interval: int(1, 3600)
-  dummy_power_watts: int(0, 7400)
+  heartbeat_interval: int
+  log_lines: int
+  meter_interval: int
+  dummy_power_watts: int
