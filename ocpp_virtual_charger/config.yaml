@@ -33,14 +33,14 @@ options:
 
 schema:
   charger:
-    server_url: str
-    chargepoint_id: str
-    password: password
-    vendor: str
-    model: str
-    chargepoint_serial_number: str
-    chargebox_serial_number: str
-    firmware_version: str
+    server_url: "str?"
+    chargepoint_id: "str?"
+    password: "password?"
+    vendor: "str?"
+    model: "str?"
+    chargepoint_serial_number: "str?"
+    chargebox_serial_number: "str?"
+    firmware_version: "str?"
     meter_type: str
   heartbeat_interval: int
   log_lines: int
