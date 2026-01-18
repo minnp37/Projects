@@ -860,7 +860,7 @@ HTML = """
 
 <script>
 async function send(cmd) {
-  await fetch('/api/cmd', {
+  await fetch('api/cmd', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({cmd})
@@ -869,7 +869,7 @@ async function send(cmd) {
 
 async function poll() {
   try {
-    const r = await fetch('/api/logs');
+    const r = await fetch('api/logs');
     const j = await r.json();
     const el = document.getElementById('logs');
     el.innerText = j.logs.join('\\n');
