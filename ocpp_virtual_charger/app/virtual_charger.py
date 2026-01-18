@@ -19,15 +19,63 @@ import yaml
 import paho.mqtt.client as mqtt  # New: MQTT client library
 import json
 from pathlib import Path
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+import websockets
+from websockets.exceptions import ConnectionClosed, ConnectionClosedError, ConnectionClosedOK
+from ocpp.v16 import call
+from ocpp.v16 import ChargePoint as cp
+from ocpp.routing import on
+# call_result classes we will return from handlers
+from ocpp.v16.call_result import (
+    RemoteStartTransaction,
+    RemoteStopTransaction,
+    ChangeConfiguration,
+    SendLocalList,
+    TriggerMessage,
+    GetConfiguration,
+)
+from ocpp.v16.enums import (
+    RegistrationStatus,
+    AuthorizationStatus,
+    ChargePointStatus,
+    ChargePointErrorCode,
+    RemoteStartStopStatus,
+    Action,
+)
 
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 STATE_FILE = DATA_DIR / "session_state.json"
 
-
+RUNNING_IN_HA = bool(os.getenv("SUPERVISOR_TOKEN"))
 # --- MQTT CONFIGURATION ---
 # Use "127.0.0.1" for your local Windows testing with Mosquitto.
 # Change to "core-mosquitto" later when moving to the HA Add-on.
-MQTT_HOST = os.getenv("MQTT_HOST", "core-mosquitto")
+if RUNNING_IN_HA:
+    MQTT_HOST = os.getenv("MQTT_HOST")
+    MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+    MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+    MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
+    MQTT_SSL = os.getenv("MQTT_SSL") == "true"
+
+    mqtt_client = mqtt.Client()
+    mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
+    if MQTT_SSL:
+        mqtt_client.tls_set()
+
+else:
+    # Standalone / dev defaults
+    MQTT_HOST = "localhost"
+    MQTT_PORT = 1883
+    mqtt_client = mqtt.Client()
+
+
+mqtt_client.will_set(
+    f"{BASE_TOPIC}/availability",
+    payload="offline",
+    retain=True
+)
 MQTT_PREFIX = "homeassistant"
 DEVICE_ID = "virtual_charger"
 BASE_TOPIC = f"ha/charger/{DEVICE_ID}"
@@ -74,14 +122,27 @@ LOG_LINES = config.get("log_lines", 500)
 initial_power = config.get("dummy_power_watts", 1000)
 
 # --- MQTT CLIENT SETUP & CALLBACKS ---
-mqtt_client = mqtt.Client()
 
 def on_mqtt_connect(client, userdata, flags, rc):
     log(f"✅ Connected to MQTT Broker (Result: {rc})")
-    publish_discovery()
-    client.publish(f"{BASE_TOPIC}/number/power/state", str(initial_power), retain=True)
-    
+
+    # 🔵 Mark device as online
+    client.publish(
+        f"{BASE_TOPIC}/availability",
+        "online",
+        retain=True
+    )
+
+    if RUNNING_IN_HA:
+        publish_discovery()
+
+    client.publish(
+        f"{BASE_TOPIC}/number/power/state",
+        str(initial_power),
+        retain=True
+    )
     client.subscribe(f"{BASE_TOPIC}/#")
+
 
 def on_mqtt_message(client, userdata, msg):
     payload = msg.payload.decode()
@@ -123,70 +184,71 @@ def publish_discovery():
         "manufacturer": "Custom Python"
     }
 
+    availability = {
+        "availability_topic": f"{BASE_TOPIC}/availability"
+    }
+
     # Entity 1: Switch (Start/Stop)
-    mqtt_client.publish(f"{MQTT_PREFIX}/switch/{DEVICE_ID}/config", json.dumps({
-        "name": "Charger Power",
-        "command_topic": f"{BASE_TOPIC}/switch/set",
-        "state_topic": f"{BASE_TOPIC}/switch/state",
-        "unique_id": f"{DEVICE_ID}_switch",
-        "device": device
-    }), retain=True)
+    mqtt_client.publish(
+        f"{MQTT_PREFIX}/switch/{DEVICE_ID}/config",
+        json.dumps({
+            "name": "Charger Power",
+            "command_topic": f"{BASE_TOPIC}/switch/set",
+            "state_topic": f"{BASE_TOPIC}/switch/state",
+            "unique_id": f"{DEVICE_ID}_switch",
+            "device": device,
+            **availability
+        }),
+        retain=True
+    )
 
     # Entity 2: Preparing Button
-    mqtt_client.publish(f"{MQTT_PREFIX}/button/{DEVICE_ID}_prep/config", json.dumps({
-        "name": "Set Preparing State",
-        "command_topic": f"{BASE_TOPIC}/button/preparing/set",
-        "unique_id": f"{DEVICE_ID}_prep",
-        "icon": "mdi:ev-plug-type2",
-        "device": device
-    }), retain=True)
+    mqtt_client.publish(
+        f"{MQTT_PREFIX}/button/{DEVICE_ID}_prep/config",
+        json.dumps({
+            "name": "Set Preparing State",
+            "command_topic": f"{BASE_TOPIC}/button/preparing/set",
+            "unique_id": f"{DEVICE_ID}_prep",
+            "icon": "mdi:ev-plug-type2",
+            "device": device,
+            **availability
+        }),
+        retain=True
+    )
 
     # Entity 3: Power Number Slider
-    mqtt_client.publish(f"{MQTT_PREFIX}/number/{DEVICE_ID}_power/config", json.dumps({
-        "name": "Charging Power",
-        "command_topic": f"{BASE_TOPIC}/number/power/set",
-        "state_topic": f"{BASE_TOPIC}/number/power/state",
-        "min": 0, "max": 7400, "step": 100,
-        "unit_of_measurement": "W",
-        "unique_id": f"{DEVICE_ID}_power",
-        "device": device
-    }), retain=True)
+    mqtt_client.publish(
+        f"{MQTT_PREFIX}/number/{DEVICE_ID}_power/config",
+        json.dumps({
+            "name": "Charging Power",
+            "command_topic": f"{BASE_TOPIC}/number/power/set",
+            "state_topic": f"{BASE_TOPIC}/number/power/state",
+            "min": 0,
+            "max": 7400,
+            "step": 100,
+            "unit_of_measurement": "W",
+            "unique_id": f"{DEVICE_ID}_power",
+            "device": device,
+            **availability
+        }),
+        retain=True
+    )
 
     # Entity 4: Energy Sensor (Meter)
-    mqtt_client.publish(f"{MQTT_PREFIX}/sensor/{DEVICE_ID}_meter/config", json.dumps({
-        "name": "Energy Meter",
-        "state_topic": f"{BASE_TOPIC}/sensor/meter",
-        "unit_of_measurement": "kWh",
-        "device_class": "energy",
-        "state_class": "total_increasing",
-        "unique_id": f"{DEVICE_ID}_meter",
-        "device": device
-    }), retain=True)
-
-import websockets
-from websockets.exceptions import ConnectionClosed, ConnectionClosedError, ConnectionClosedOK
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from ocpp.v16 import call
-from ocpp.v16 import ChargePoint as cp
-from ocpp.routing import on
-# call_result classes we will return from handlers
-from ocpp.v16.call_result import (
-    RemoteStartTransaction,
-    RemoteStopTransaction,
-    ChangeConfiguration,
-    SendLocalList,
-    TriggerMessage,
-    GetConfiguration,
-)
-from ocpp.v16.enums import (
-    RegistrationStatus,
-    AuthorizationStatus,
-    ChargePointStatus,
-    ChargePointErrorCode,
-    RemoteStartStopStatus,
-    Action,
-)
+    mqtt_client.publish(
+        f"{MQTT_PREFIX}/sensor/{DEVICE_ID}_meter/config",
+        json.dumps({
+            "name": "Energy Meter",
+            "state_topic": f"{BASE_TOPIC}/sensor/meter",
+            "unit_of_measurement": "kWh",
+            "device_class": "energy",
+            "state_class": "total_increasing",
+            "unique_id": f"{DEVICE_ID}_meter",
+            "device": device,
+            **availability
+        }),
+        retain=True
+    )
 
 
 # ------------------ LOGGING ------------------ #
@@ -903,6 +965,23 @@ async def api_cmd(req: Request):
 @app.get("/api/logs")
 async def api_logs():
     return {"logs": list(log_buffer)}
+    
+@app.on_event("startup")
+async def start_ocpp_worker():
+    # Schedule ocpp_worker in the background
+    asyncio.create_task(ocpp_worker())
+    log("⚡ OCPP worker scheduled on startup")
+
+@app.on_event("shutdown")
+async def stop_ocpp_worker():
+    # Mark MQTT device offline
+    try:
+        mqtt_client.publish(f"{BASE_TOPIC}/availability", "offline", retain=True)
+        mqtt_client.loop_stop()
+        log("🛑 OCPP worker shutdown, MQTT loop stopped")
+    except Exception as e:
+        log(f"⚠️ Error during shutdown: {e}")
+
 
 
 
@@ -949,16 +1028,38 @@ async def ocpp_worker():
         "User-Agent": "VirtualWallbox/1.0",
         "Host": full_url.split("/")[2],
     }
+
     global loop
     loop = asyncio.get_running_loop()
 
+    # --- MQTT Initialization ---
     try:
-        mqtt_client.connect(MQTT_HOST, 1883, 60)
-        mqtt_client.loop_start()
-        log("📡 MQTT Background Loop Started")
-    except Exception as e:
-        log(f"❌ Failed to connect to MQTT: {e}")
+        # 1️⃣ Set Last Will (offline if disconnected)
+        mqtt_client.will_set(
+            f"{BASE_TOPIC}/availability",
+            payload="offline",
+            retain=True
+        )
 
+        # 2️⃣ Set callbacks
+        mqtt_client.on_connect = on_mqtt_connect
+        mqtt_client.on_message = on_mqtt_message
+
+        # 3️⃣ Connect to broker (non-blocking)
+        mqtt_client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
+
+        # 4️⃣ Start background loop
+        mqtt_client.loop_start()
+
+        # 5️⃣ Immediately mark device online
+        mqtt_client.publish(f"{BASE_TOPIC}/availability", "online", retain=True)
+
+        log("📡 MQTT Background Loop Started")
+
+    except Exception as e:
+        log(f"❌ Failed to initialize MQTT: {type(e).__name__}: {e}")
+
+    # --- OCPP Worker Loop ---
     while True:
         try:
             log(f"🔌 Connecting to OCPP central system at {full_url}")
@@ -973,15 +1074,14 @@ async def ocpp_worker():
 
                 cp_obj = VirtualChargePoint(CHARGEPOINT_ID, ws, charger_config)
 
-
-                # load previous state and resume (won't re-send BootNotification here)
+                # Load previous state and resume
                 await cp_obj.load_state()
                 await cp_obj.resume_after_reconnect()
 
-                # start the ocpp listener
-                listener_task = asyncio.create_task(cp_obj.start())                
+                # Start OCPP listener
+                listener_task = asyncio.create_task(cp_obj.start())
 
-                # Send BootNotification only if this is a cold start (no saved heartbeat)
+                # Send BootNotification only if cold start
                 if getattr(cp_obj, "heartbeat_task", None) is None or cp_obj.heartbeat_task.done():
                     log("🔌 Sending BootNotification (first startup or heartbeat missing)")
                     await cp_obj.send_boot_notification()
@@ -990,11 +1090,14 @@ async def ocpp_worker():
                     await cp_obj._ensure_heartbeat_running()
 
                 try:
+                    # Start command processing task
                     command_processing_task = asyncio.create_task(_run_command_processing(cp_obj, command_queue))
-                    # Wait until either the listener exits (disconnect) or command task returns (exit)
+                    # Wait for listener or command task to complete (exit or disconnect)
                     await asyncio.gather(listener_task, command_processing_task)
+
                 except Exception as e:
                     log(f"⚠️ Runtime task failed: {type(e).__name__}: {e}")
+
                 finally:
                     log("Cleanup: Connection broken or runtime complete. Cancelling all CP tasks.")
                     tasks_to_cancel = [listener_task]
@@ -1027,6 +1130,8 @@ async def ocpp_worker():
             log("Reconnecting in 15 s...")
             await asyncio.sleep(15)
             continue
+
+
 
 # ------------------ Lifespan (startup/shutdown) ------------------ #
 @asynccontextmanager
