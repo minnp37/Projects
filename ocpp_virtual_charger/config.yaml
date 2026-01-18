@@ -29,6 +29,13 @@ options:
   meter_interval: 60
   dummy_power_watts: 0
 
+  mqtt:
+    host: "core-mosquitto"
+    port: 1883
+    username: null
+    password: null
+    ssl: false
+
 schema:
   charger:
     server_url: "str?"
@@ -44,3 +51,10 @@ schema:
   log_lines: int
   meter_interval: int
   dummy_power_watts: int
+
+  mqtt:
+    host: "str?"
+    port: int
+    username: "str?"
+    password: "password?"
+    ssl: bool

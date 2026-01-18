@@ -47,39 +47,6 @@ from ocpp.v16.enums import (
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
 STATE_FILE = DATA_DIR / "session_state.json"
 
-RUNNING_IN_HA = bool(os.getenv("SUPERVISOR_TOKEN"))
-# --- MQTT CONFIGURATION ---
-# Use "127.0.0.1" for your local Windows testing with Mosquitto.
-# Change to "core-mosquitto" later when moving to the HA Add-on.
-if RUNNING_IN_HA:
-    MQTT_HOST = os.getenv("MQTT_HOST") or "core-mosquitto"
-    MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
-    MQTT_USERNAME = os.getenv("MQTT_USERNAME") or "mqttuser"
-    MQTT_PASSWORD = os.getenv("MQTT_PASSWORD") or "tQg9wYrJsX839pQ"
-    MQTT_SSL = os.getenv("MQTT_SSL") == "true"
-
-    mqtt_client = mqtt.Client()
-    mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-
-    if MQTT_SSL:
-        mqtt_client.tls_set()
-
-else:
-    # Standalone / dev defaults
-    MQTT_HOST = "localhost"
-    MQTT_PORT = 1883
-    mqtt_client = mqtt.Client()
-
-
-MQTT_PREFIX = "homeassistant"
-DEVICE_ID = "virtual_charger"
-BASE_TOPIC = f"ha/charger/{DEVICE_ID}"
-
-mqtt_client.will_set(
-    f"{BASE_TOPIC}/availability",
-    payload="offline",
-    retain=True
-)
 
 # Global references needed for MQTT callbacks to interact with the OCPP tasks
 global_cp = None
@@ -122,8 +89,43 @@ LOG_LINES = config.get("log_lines", 500)
 # Initialize power from the config value
 initial_power = config.get("dummy_power_watts", 1000)
 
-# --- MQTT CLIENT SETUP & CALLBACKS ---
 
+
+# --- MQTT CLIENT SETUP & CALLBACKS ---
+RUNNING_IN_HA = bool(os.getenv("SUPERVISOR_TOKEN"))
+# --- MQTT CONFIGURATION ---
+# Use "127.0.0.1" for your local Windows testing with Mosquitto.
+# Change to "core-mosquitto" later when moving to the HA Add-on.
+if RUNNING_IN_HA:
+    mqtt_config = config.get("mqtt", {})
+    MQTT_HOST = mqtt_config.get("host")
+    MQTT_PORT = int(mqtt_config.get("port", 1883))
+    MQTT_USERNAME = mqtt_config.get("username")
+    MQTT_PASSWORD = mqtt_config.get("password")
+    MQTT_SSL = mqtt_config.get("ssl", False)
+
+    mqtt_client = mqtt.Client()
+    mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+
+    if MQTT_SSL:
+        mqtt_client.tls_set()
+
+else:
+    # Standalone / dev defaults
+    MQTT_HOST = "localhost"
+    MQTT_PORT = 1883
+    mqtt_client = mqtt.Client()
+
+
+MQTT_PREFIX = "homeassistant"
+DEVICE_ID = "virtual_charger"
+BASE_TOPIC = f"ha/charger/{DEVICE_ID}"
+
+mqtt_client.will_set(
+    f"{BASE_TOPIC}/availability",
+    payload="offline",
+    retain=True
+)
 def on_mqtt_connect(client, userdata, flags, rc):
     log(f"✅ Connected to MQTT Broker (Result: {rc})")
 
