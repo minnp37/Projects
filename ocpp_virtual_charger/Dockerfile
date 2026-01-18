@@ -45,5 +45,9 @@ COPY . .
 # Make run.sh executable
 RUN chmod +x run.sh
 
+# Ensure /data exists and declare as volume for persistence
+RUN mkdir -p /data
+VOLUME /data
+
 # Start the add-on
 CMD ["./run.sh"]

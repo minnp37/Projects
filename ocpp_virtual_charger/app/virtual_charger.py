@@ -972,12 +972,14 @@ async def ocpp_worker():
                 log("✅ WebSocket connected")
 
                 cp_obj = VirtualChargePoint(CHARGEPOINT_ID, ws, charger_config)
-                # start the ocpp listener
-                listener_task = asyncio.create_task(cp_obj.start())
+
 
                 # load previous state and resume (won't re-send BootNotification here)
                 await cp_obj.load_state()
                 await cp_obj.resume_after_reconnect()
+
+                # start the ocpp listener
+                listener_task = asyncio.create_task(cp_obj.start())                
 
                 # Send BootNotification only if this is a cold start (no saved heartbeat)
                 if getattr(cp_obj, "heartbeat_task", None) is None or cp_obj.heartbeat_task.done():
