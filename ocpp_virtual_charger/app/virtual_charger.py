@@ -1052,6 +1052,7 @@ if __name__ == "__main__":
     import uvicorn
     import os
 
-    port = int(os.getenv("PORT", 8000))  # Use HA-provided port, fallback to 8000
+    port = int(os.getenv("ADDON_INGRESS_PORT", 8000))
     log(f"Starting FastAPI app (uvicorn) on port {port}...")
     uvicorn.run("virtual_charger:app", host="0.0.0.0", port=port, log_level="info")
+
