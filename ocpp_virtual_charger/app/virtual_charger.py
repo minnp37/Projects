@@ -52,10 +52,10 @@ RUNNING_IN_HA = bool(os.getenv("SUPERVISOR_TOKEN"))
 # Use "127.0.0.1" for your local Windows testing with Mosquitto.
 # Change to "core-mosquitto" later when moving to the HA Add-on.
 if RUNNING_IN_HA:
-    MQTT_HOST = os.getenv("MQTT_HOST")
+    MQTT_HOST = os.getenv("MQTT_HOST") or "core-mosquitto"
     MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
-    MQTT_USERNAME = os.getenv("MQTT_USERNAME")
-    MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
+    MQTT_USERNAME = os.getenv("MQTT_USERNAME") or "mqttuser"
+    MQTT_PASSWORD = os.getenv("MQTT_PASSWORD") or "tQg9wYrJsX839pQ"
     MQTT_SSL = os.getenv("MQTT_SSL") == "true"
 
     mqtt_client = mqtt.Client()
