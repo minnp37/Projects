@@ -1050,5 +1050,8 @@ app.router.lifespan_context = lifespan
 # ------------------ Run as script (optional) ------------------ #
 if __name__ == "__main__":
     import uvicorn
-    log("Starting FastAPI app (uvicorn)...")
-    uvicorn.run("virtual_charger:app", host="0.0.0.0", port=8000, log_level="info")
+    import os
+
+    port = int(os.getenv("PORT", 8000))  # Use HA-provided port, fallback to 8000
+    log(f"Starting FastAPI app (uvicorn) on port {port}...")
+    uvicorn.run("virtual_charger:app", host="0.0.0.0", port=port, log_level="info")
