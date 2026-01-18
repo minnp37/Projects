@@ -151,11 +151,10 @@ def on_mqtt_message(client, userdata, msg):
     payload = msg.payload.decode()
     log(f"📩 MQTT Received: {msg.topic} -> {payload}", heartbeat=True)
     
-    # 1. Handle the ON/OFF Switch
+    # 1. Handle the Charger Stop Button
     if msg.topic == f"{BASE_TOPIC}/switch/set":
-        cmd = "charge" if payload == "ON" else "stop"
-        # This is the 'recommended structure' bridge:
-        asyncio.run_coroutine_threadsafe(command_queue.put(cmd), loop)
+        # Always stop transaction on button press
+        asyncio.run_coroutine_threadsafe(command_queue.put("stop"), loop)
     
     # 2. Handle the 'Preparing' Button
     elif msg.topic == f"{BASE_TOPIC}/button/preparing/set":
@@ -174,9 +173,10 @@ def on_mqtt_message(client, userdata, msg):
         except ValueError:
             pass
 
-# After the function, we link it to the client:
+# Link to client
 mqtt_client.on_connect = on_mqtt_connect
 mqtt_client.on_message = on_mqtt_message
+
 
 def publish_discovery():
     """Publishes MQTT Discovery JSON so HA creates the entities automatically."""
@@ -191,14 +191,14 @@ def publish_discovery():
         "availability_topic": f"{BASE_TOPIC}/availability"
     }
 
-    # Entity 1: Switch (Start/Stop)
+    # Entity 1: Stop Charging Button
     mqtt_client.publish(
-        f"{MQTT_PREFIX}/switch/{DEVICE_ID}/config",
+        f"{MQTT_PREFIX}/button/{DEVICE_ID}_stop/config",
         json.dumps({
-            "name": "Charger Power",
+            "name": "Stop Charging",
             "command_topic": f"{BASE_TOPIC}/switch/set",
-            "state_topic": f"{BASE_TOPIC}/switch/state",
-            "unique_id": f"{DEVICE_ID}_switch",
+            "unique_id": f"{DEVICE_ID}_stop",
+            "icon": "mdi:ev-plug-type2",
             "device": device,
             **availability
         }),
@@ -252,6 +252,7 @@ def publish_discovery():
         }),
         retain=True
     )
+
 
 
 # ------------------ LOGGING ------------------ #
