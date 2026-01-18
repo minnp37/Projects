@@ -16,6 +16,6 @@ echo "🌐 Ingress path: ${INGRESS_PATH}"
 
 exec uvicorn app.virtual_charger:app \
   --host 0.0.0.0 \
-  --port 8000 \
+  --port 8099 \
   ${INGRESS_PATH:+--root-path "$INGRESS_PATH"} \
   --forwarded-allow-ips="*"
