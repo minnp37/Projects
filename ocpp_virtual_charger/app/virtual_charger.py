@@ -71,14 +71,15 @@ else:
     mqtt_client = mqtt.Client()
 
 
+MQTT_PREFIX = "homeassistant"
+DEVICE_ID = "virtual_charger"
+BASE_TOPIC = f"ha/charger/{DEVICE_ID}"
+
 mqtt_client.will_set(
     f"{BASE_TOPIC}/availability",
     payload="offline",
     retain=True
 )
-MQTT_PREFIX = "homeassistant"
-DEVICE_ID = "virtual_charger"
-BASE_TOPIC = f"ha/charger/{DEVICE_ID}"
 
 # Global references needed for MQTT callbacks to interact with the OCPP tasks
 global_cp = None
