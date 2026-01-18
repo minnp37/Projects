@@ -1047,7 +1047,7 @@ async def lifespan(app: FastAPI):
 
 app.router.lifespan_context = lifespan
 
-# ------------------ Run as script (optional) ------------------ #
+""" # ------------------ Run as script (optional) ------------------ #
 if __name__ == "__main__":
     import uvicorn
     import os
@@ -1056,4 +1056,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("ADDON_INGRESS_PORT", 8099))
 
     print(f"Starting FastAPI app on 0.0.0.0:{port} (forced for HA Ingress)...")
-    uvicorn.run("virtual_charger:app", host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run("virtual_charger:app", host="0.0.0.0", port=port, log_level="info") """
