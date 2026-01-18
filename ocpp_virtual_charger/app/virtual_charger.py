@@ -1052,10 +1052,8 @@ if __name__ == "__main__":
     import uvicorn
     import os
 
-    # Local dev fallback = 8000
-    port = int(os.environ.get("ADDON_INGRESS_PORT") or os.environ.get("PORT") or 8000)
+    # Force ingress port
+    port = int(os.environ.get("ADDON_INGRESS_PORT", 8099))
 
-    print(f"Starting FastAPI app on 0.0.0.0:{port}...")
+    print(f"Starting FastAPI app on 0.0.0.0:{port} (forced for HA Ingress)...")
     uvicorn.run("virtual_charger:app", host="0.0.0.0", port=port, log_level="info")
-
-
