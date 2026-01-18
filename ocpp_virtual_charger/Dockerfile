@@ -10,28 +10,40 @@ RUN if command -v apk >/dev/null 2>&1; then \
             py3-pip \
             gcc \
             musl-dev \
-            python3-dev; \
+            python3-dev \
+            libffi-dev \
+            bash; \
     else \
         apt-get update && apt-get install -y \
             gcc \
             python3-dev \
             build-essential \
+            libffi-dev \
+            bash \
         && rm -rf /var/lib/apt/lists/*; \
     fi
 
-# Install Python dependencies
-RUN pip install --no-cache-dir \
-    fastapi \
-    uvicorn \
-    websockets==10.4 \
-    ocpp \
-    jinja2 \
-    pyyaml \
-    aiohttp \
-    paho-mqtt
+# Create a virtual environment for Python packages
+RUN python3 -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip \
+    && /opt/venv/bin/pip install --no-cache-dir \
+        fastapi \
+        uvicorn \
+        websockets==10.4 \
+        ocpp \
+        jinja2 \
+        pyyaml \
+        aiohttp \
+        paho-mqtt
 
+# Make the venv Python the default
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy your add-on code
 COPY . .
 
+# Make run.sh executable
 RUN chmod +x run.sh
 
+# Start the add-on
 CMD ["./run.sh"]
