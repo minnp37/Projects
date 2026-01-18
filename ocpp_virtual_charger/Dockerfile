@@ -1,18 +1,26 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
-
-# 1. Install Python and build tools
-RUN apk add --no-cache \
-    python3 \
-    py3-pip \
-    gcc \
-    musl-dev \
-    python3-dev
+ARG BUILD_FROM=python:3.12-slim
+FROM ${BUILD_FROM}
 
 WORKDIR /app
 
-# 2. Install everything your app needs directly
-RUN pip install --no-cache-dir --break-system-packages \
+# Detect package manager and install build deps
+RUN if command -v apk >/dev/null 2>&1; then \
+        apk add --no-cache \
+            python3 \
+            py3-pip \
+            gcc \
+            musl-dev \
+            python3-dev; \
+    else \
+        apt-get update && apt-get install -y \
+            gcc \
+            python3-dev \
+            build-essential \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
     fastapi \
     uvicorn \
     websockets==10.4 \
@@ -22,9 +30,8 @@ RUN pip install --no-cache-dir --break-system-packages \
     aiohttp \
     paho-mqtt
 
-# 3. Copy your code (this includes your /app folder and /run.sh)
 COPY . .
 
-RUN chmod a+x run.sh
+RUN chmod +x run.sh
 
-CMD [ "./run.sh" ]
+CMD ["./run.sh"]

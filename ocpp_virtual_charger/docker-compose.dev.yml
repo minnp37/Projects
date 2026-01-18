@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  ocpp_virtual_charger:
+    build: .
+    container_name: ocpp_virtual_charger_dev
+    working_dir: /app
+    volumes:
+      - ./app:/app/app
+      - ./app/data:/data
+    environment:
+      MQTT_HOST: host.docker.internal
+      DATA_DIR: /data
+    ports:
+      - "8000:8000"
+    command: >
+      uvicorn app.virtual_charger:app
+      --host 0.0.0.0
+      --port 8000
+      --reload

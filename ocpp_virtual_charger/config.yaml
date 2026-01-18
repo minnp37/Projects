@@ -11,7 +11,7 @@ ingress: true
 panel_icon: "mdi:ev-station"
 panel_title: "Charger Debug"
 ports:
-  8000/tcp: 8001
+  8001/tcp: 8000
 services:
   - mqtt:need
 

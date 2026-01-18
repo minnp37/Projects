@@ -13,19 +13,21 @@ import logging
 from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import os
 from typing import Deque, Optional
 import yaml
 import paho.mqtt.client as mqtt  # New: MQTT client library
 import json
 from pathlib import Path
 
-STATE_FILE = Path("/data/session_state.json")
+DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
+STATE_FILE = DATA_DIR / "session_state.json"
 
 
 # --- MQTT CONFIGURATION ---
 # Use "127.0.0.1" for your local Windows testing with Mosquitto.
 # Change to "core-mosquitto" later when moving to the HA Add-on.
-MQTT_HOST = "core-mosquitto" 
+MQTT_HOST = os.getenv("MQTT_HOST", "core-mosquitto")
 MQTT_PREFIX = "homeassistant"
 DEVICE_ID = "virtual_charger"
 BASE_TOPIC = f"ha/charger/{DEVICE_ID}"
@@ -233,12 +235,11 @@ class VirtualChargePoint(cp):
         self.meter_interval = config.get("meter_interval", 60)
         self.dummy_power_watts = config.get("dummy_power_watts", 1000)
 
-        self.log("⚠️ Not resetting persistent meter.")  # now safe
 
-        state = load_state()
         self.meter_at_start = None
-        self.meter_wh = state.get("meter_wh", 3095457)
-        self.log(f"💾 Loaded persistent meter: {self.meter_wh} Wh")
+        self.meter_wh = 0
+        self.total_energy_kwh = 0.0
+        self.log("ℹ️ Meter will be restored from persisted state if available")
 
         self.heartbeat_count = 0
         self.manual_stop_requested = False

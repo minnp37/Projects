@@ -1,0 +1,21 @@
+{
+  "charger": {
+    "server_url": "wss://ocpp.octopus.energy/ocpp/00000000-0009-4000-8020-000000033ba3",
+    "chargepoint_id": "00000000-0009-4000-8020-000000033ba3",
+    "password": "aQzexPNFeqHSkCD9",
+    "vendor": "Wall Box Chargers",
+    "model": "PLP1-0-2-2",
+    "chargepoint_serial_number": "189545",
+    "chargebox_serial_number": "189545",
+    "firmware_version": "6.7.36",
+    "meter_type": "Internal NON compliant"
+  },
+  "telemetry": {
+    "power_entity": "sensor.givtcp_ch2330g239_charge_power",
+    "energy_entity": "sensor.givtcp_ch2330g239_charge_energy"
+  },
+  "heartbeat_interval": 10,
+  "log_lines": 500,
+  "meter_interval": 60,
+  "dummy_power_watts": 1000
+}
