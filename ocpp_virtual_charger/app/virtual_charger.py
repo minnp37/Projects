@@ -1052,9 +1052,10 @@ if __name__ == "__main__":
     import uvicorn
     import os
 
-    # Home Assistant ingress injects ADDON_INGRESS_PORT
-    port = int(os.environ.get("ADDON_INGRESS_PORT", os.environ.get("PORT", 8000)))
+    # Local dev fallback = 8000
+    port = int(os.environ.get("ADDON_INGRESS_PORT") or os.environ.get("PORT") or 8000)
 
-    log(f"Starting FastAPI app (uvicorn) on port {port}...")
+    print(f"Starting FastAPI app on 0.0.0.0:{port}...")
     uvicorn.run("virtual_charger:app", host="0.0.0.0", port=port, log_level="info")
+
 
