@@ -1,22 +1,14 @@
-#!/usr/bin/with-contenv bashio
+#!/bin/bash
+# Starts the Virtual Car Charger inside the add-on container.
+# No Home Assistant base image or bashio needed: Home Assistant's ingress proxy strips its path prefix and the
+# web page only uses relative URLs, so no --root-path is required. Settings are read from /data/options.json.
 set -e
 
-echo "🚀 Starting OCPP Virtual Charger Add-on..."
-
 cd /app
-
-# Detect Home Assistant ingress (safe locally)
-if command -v bashio >/dev/null 2>&1; then
-  INGRESS_PATH=$(bashio::addon.ingress_entry)
-else
-  INGRESS_PATH=""
-fi
-
-echo "🌐 Ingress path: ${INGRESS_PATH}"
+echo "Starting Virtual Car Charger add-on..."
 
 exec uvicorn app.virtual_charger:app \
   --host 0.0.0.0 \
   --port 8099 \
-  ${INGRESS_PATH:+--root-path "$INGRESS_PATH"} \
   --ws none \
   --forwarded-allow-ips="*"

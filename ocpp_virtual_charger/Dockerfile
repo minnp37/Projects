@@ -42,8 +42,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy your add-on code
 COPY . .
 
-# Make run.sh executable
-RUN chmod +x run.sh
+# Make run.sh executable (and strip any Windows line endings that would stop it running)
+RUN tr -d '\r' < run.sh > /tmp/run.sh && mv /tmp/run.sh run.sh && chmod +x run.sh
 
 # Ensure /data exists and declare as volume for persistence
 RUN mkdir -p /data
