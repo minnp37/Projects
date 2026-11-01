@@ -18,4 +18,5 @@ exec uvicorn app.virtual_charger:app \
   --host 0.0.0.0 \
   --port 8099 \
   ${INGRESS_PATH:+--root-path "$INGRESS_PATH"} \
+  --ws none \
   --forwarded-allow-ips="*"

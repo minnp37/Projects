@@ -1,6 +1,6 @@
 name: "OCPP Virtual Charger"
-description: "Virtual Charger for OCPP Servers with FastAPI Web UI"
-version: "1.0"
+description: "Virtual OCPP 1.6 car charger for Octopus Energy. Mimics a Wallbox Pulsar Plus and lets Home Assistant set the power and lifetime energy it reports."
+version: "1.2"
 slug: "ocpp_virtual_charger"
 arch:
   - aarch64
@@ -9,7 +9,7 @@ arch:
 init: false
 ingress: true
 panel_icon: "mdi:ev-station"
-panel_title: "Charger Debug"
+panel_title: "Virtual Car Charger"
 services:
   - mqtt:need
 
@@ -22,13 +22,31 @@ options:
     model: null
     chargepoint_serial_number: null
     chargebox_serial_number: null
-    firmware_version: null
+    firmware_version: "X.XX.XX"
     meter_type: "Internal NON compliant"
-  heartbeat_interval: 10
-  log_lines: 500
+    initial_meter_wh: 0          # starting lifetime register (Wh); only used when there is no saved state
+    meter_wh_override: null      # one-time reset (Wh): applied once, then the saved state takes over again
+    user_agent: "WebSocket++/0.8.2"
+    default_id_tag: "ffffffffffffff7f"
+  heartbeat_interval: 300
   meter_interval: 60
+  clock_aligned_interval: 900
+  ws_ping_interval: 50
   dummy_power_watts: 0
-
+  energy_source: "integrate"     # integrate = energy accumulates from power; mqtt = energy only changes when you set it
+  voltage_v: 226
+  manual_stop_lockout_s: 60
+  log_lines: 500
+  log_raw_frames: true
+  quirks:
+    aligned_timestamp_lag: true
+    boot_sample_energy_zero: false
+    boot_on_reconnect: false
+  timing:
+    prepare_s: 1.5
+    suspended_ev_s: 0.5
+    start_transaction_s: 0.15
+    charging_s: 6.0
   mqtt:
     host: "core-mosquitto"
     port: 1883
@@ -47,11 +65,29 @@ schema:
     chargebox_serial_number: "str?"
     firmware_version: "str?"
     meter_type: str
+    initial_meter_wh: "int?"
+    meter_wh_override: "int?"
+    user_agent: "str?"
+    default_id_tag: "str?"
   heartbeat_interval: int
-  log_lines: int
   meter_interval: int
+  clock_aligned_interval: int
+  ws_ping_interval: int
   dummy_power_watts: int
-
+  energy_source: "list(integrate|mqtt)"
+  voltage_v: int
+  manual_stop_lockout_s: int
+  log_lines: int
+  log_raw_frames: bool
+  quirks:
+    aligned_timestamp_lag: bool
+    boot_sample_energy_zero: bool
+    boot_on_reconnect: bool
+  timing:
+    prepare_s: float
+    suspended_ev_s: float
+    start_transaction_s: float
+    charging_s: float
   mqtt:
     host: "str?"
     port: int

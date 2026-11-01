@@ -1,0 +1,302 @@
+[
+ {
+  "key": "AllowOfflineTxForUnknownId",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "AuthorizationCacheEnabled",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "AuthorizeRemoteTxRequests",
+  "value": "false",
+  "readonly": false
+ },
+ {
+  "key": "BlinkRepeat",
+  "value": "10",
+  "readonly": false
+ },
+ {
+  "key": "ClockAlignedDataInterval",
+  "value": "900",
+  "readonly": false
+ },
+ {
+  "key": "ConnectionTimeOut",
+  "value": "120",
+  "readonly": false
+ },
+ {
+  "key": "ConnectorPhaseRotation",
+  "value": "1.Unknown",
+  "readonly": false
+ },
+ {
+  "key": "ConnectorPhaseRotationMaxLength",
+  "value": "1",
+  "readonly": true
+ },
+ {
+  "key": "GetConfigurationMaxKeys",
+  "value": "50",
+  "readonly": true
+ },
+ {
+  "key": "HeartbeatInterval",
+  "value": "300",
+  "readonly": false
+ },
+ {
+  "key": "LightIntensity",
+  "value": "100",
+  "readonly": false
+ },
+ {
+  "key": "LocalAuthorizeOffline",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "LocalPreAuthorize",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "MaxEnergyOnInvalidId",
+  "value": "5000",
+  "readonly": false
+ },
+ {
+  "key": "MeterValuesAlignedData",
+  "value": "Energy.Active.Import.Register,Power.Active.Import",
+  "readonly": false
+ },
+ {
+  "key": "MeterValuesAlignedDataMaxLength",
+  "value": "10",
+  "readonly": true
+ },
+ {
+  "key": "MeterValuesSampledData",
+  "value": "Energy.Active.Import.Register,Power.Active.Import,Frequency,Power.Offered,Current.Offered,SoC,Energy.Active.Export.Register,Power.Active.Export",
+  "readonly": false
+ },
+ {
+  "key": "MeterValuesSampledDataMaxLength",
+  "value": "10",
+  "readonly": true
+ },
+ {
+  "key": "MeterValueSampleInterval",
+  "value": "60",
+  "readonly": false
+ },
+ {
+  "key": "MinimumStatusDuration",
+  "value": "1",
+  "readonly": false
+ },
+ {
+  "key": "NumberOfConnectors",
+  "value": "1",
+  "readonly": true
+ },
+ {
+  "key": "ResetRetries",
+  "value": "0",
+  "readonly": false
+ },
+ {
+  "key": "StopTransactionOnEVSideDisconnect",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "StopTransactionOnInvalidId",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "StopTxnAlignedData",
+  "value": "",
+  "readonly": false
+ },
+ {
+  "key": "StopTxnAlignedDataMaxLength",
+  "value": "0",
+  "readonly": true
+ },
+ {
+  "key": "StopTxnSampledData",
+  "value": "",
+  "readonly": false
+ },
+ {
+  "key": "StopTxnSampledDataMaxLength",
+  "value": "0",
+  "readonly": true
+ },
+ {
+  "key": "StopTransactionMaxMeterValues",
+  "value": "10000",
+  "readonly": true
+ },
+ {
+  "key": "SupportedFileTransferProtocols",
+  "value": "",
+  "readonly": true
+ },
+ {
+  "key": "SupportedFeatureProfiles",
+  "value": "Core,FirmwareManagement,LocalAuthListManagement,Reservation,SmartCharging,RemoteTrigger",
+  "readonly": true
+ },
+ {
+  "key": "SupportedFeatureProfilesMaxLength",
+  "value": "6",
+  "readonly": true
+ },
+ {
+  "key": "TransactionMessageAttempts",
+  "value": "3",
+  "readonly": false
+ },
+ {
+  "key": "TransactionMessageRetryInterval",
+  "value": "60",
+  "readonly": false
+ },
+ {
+  "key": "UnlockConnectorOnEVSideDisconnect",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "WebSocketPingInterval",
+  "value": "50",
+  "readonly": false
+ },
+ {
+  "key": "LocalAuthListEnabled",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "LocalAuthListMaxLength",
+  "value": "5000000",
+  "readonly": true
+ },
+ {
+  "key": "SendLocalListMaxLength",
+  "value": "450",
+  "readonly": true
+ },
+ {
+  "key": "ReserveConnectorZeroSupported",
+  "value": "false",
+  "readonly": true
+ },
+ {
+  "key": "ChargeProfileMaxStackLevel",
+  "value": "10",
+  "readonly": true
+ },
+ {
+  "key": "ChargingScheduleAllowedChargingRateUnit",
+  "value": "Current",
+  "readonly": true
+ },
+ {
+  "key": "ChargingScheduleMaxPeriods",
+  "value": "100",
+  "readonly": true
+ },
+ {
+  "key": "ConnectorSwitch3to1PhaseSupported",
+  "value": "false",
+  "readonly": true
+ },
+ {
+  "key": "MaxChargingProfilesInstalled",
+  "value": "30",
+  "readonly": true
+ },
+ {
+  "key": "chargingALimitConn1",
+  "value": "32",
+  "readonly": false
+ },
+ {
+  "key": "AuthEnabled",
+  "value": "true",
+  "readonly": false
+ },
+ {
+  "key": "AuthEnabledOffline",
+  "value": "false",
+  "readonly": false
+ },
+ {
+  "key": "AuthDisabledIdTag",
+  "value": "NoAuthorization",
+  "readonly": false
+ },
+ {
+  "key": "minSoC",
+  "value": "25",
+  "readonly": false
+ },
+ {
+  "key": "maxSoC",
+  "value": "97",
+  "readonly": false
+ },
+ {
+  "key": "SSID",
+  "value": "",
+  "readonly": true
+ },
+ {
+  "key": "WiFiSignalStrength",
+  "value": "72",
+  "readonly": true
+ },
+ {
+  "key": "SerialNumber",
+  "value": "189545",
+  "readonly": true
+ },
+ {
+  "key": "PUK",
+  "value": "",
+  "readonly": true
+ },
+ {
+  "key": "WebSocketUrl",
+  "value": "",
+  "readonly": false
+ },
+ {
+  "key": "WebSocketUser",
+  "value": "",
+  "readonly": false
+ },
+ {
+  "key": "WebSocketPassword",
+  "value": "",
+  "readonly": false
+ },
+ {
+  "key": "MeterValuesSkipWhenOffline",
+  "value": "false",
+  "readonly": false
+ },
+ {
+  "key": "PeriodicRebootEnabled",
+  "value": "false",
+  "readonly": false
+ }
+]

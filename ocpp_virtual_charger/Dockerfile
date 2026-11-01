@@ -30,7 +30,7 @@ RUN python3 -m venv /opt/venv \
         fastapi \
         uvicorn \
         websockets==10.4 \
-        ocpp \
+        ocpp==2.1.0 \
         jinja2 \
         pyyaml \
         aiohttp \

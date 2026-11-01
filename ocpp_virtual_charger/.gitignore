@@ -1,0 +1,5 @@
+app/data/options.json
+app/data/session_state.json
+app/data/charger_config.json
+app/data/captures/
+__pycache__/

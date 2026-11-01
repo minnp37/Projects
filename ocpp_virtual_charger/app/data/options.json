@@ -1,21 +1,45 @@
 {
   "charger": {
-    "server_url": "wss://ocpp.octopus.energy/ocpp/00000000-0009-4000-8020-000000033ba3",
-    "chargepoint_id": "00000000-0009-4000-8020-000000033ba3",
-    "password": "aQzexPNFeqHSkCD9",
-    "vendor": "Wall Box Chargers",
-    "model": "PLP1-0-2-2",
-    "chargepoint_serial_number": "189545",
-    "chargebox_serial_number": "189545",
-    "firmware_version": "6.7.36",
-    "meter_type": "Internal NON compliant"
+    "server_url": "wss://ocpp.octopus.energy/ocpp/",
+    "chargepoint_id": "<your chargepoint id>",
+    "password": "<your password>",
+    "vendor": null,
+    "model": null,
+    "chargepoint_serial_number": "XXXXXX",
+    "chargebox_serial_number": "XXXXXX",
+    "firmware_version": "X.XX.XX",
+    "meter_type": "Internal NON compliant",
+    "initial_meter_wh": null,
+    "meter_wh_override": null,
+    "user_agent": "WebSocket++/0.8.2",
+    "default_id_tag": "ffffffffffffff7f"
   },
-  "telemetry": {
-    "power_entity": "sensor.givtcp_ch2330g239_charge_power",
-    "energy_entity": "sensor.givtcp_ch2330g239_charge_energy"
-  },
-  "heartbeat_interval": 10,
-  "log_lines": 500,
+  "heartbeat_interval": 300,
   "meter_interval": 60,
-  "dummy_power_watts": 1000
+  "clock_aligned_interval": 900,
+  "ws_ping_interval": 50,
+  "dummy_power_watts": 0,
+  "energy_source": "integrate",
+  "voltage_v": 226,
+  "manual_stop_lockout_s": 60,
+  "log_lines": 500,
+  "log_raw_frames": true,
+  "quirks": {
+    "aligned_timestamp_lag": true,
+    "boot_sample_energy_zero": false,
+    "boot_on_reconnect": false
+  },
+  "timing": {
+    "prepare_s": 1.5,
+    "suspended_ev_s": 0.5,
+    "start_transaction_s": 0.15,
+    "charging_s": 6.0
+  },
+  "mqtt": {
+    "host": "core-mosquitto",
+    "port": 1883,
+    "username": null,
+    "password": null,
+    "ssl": false
+  }
 }
