@@ -1,6 +1,6 @@
 name: "OCPP Virtual Charger"
 description: "Virtual OCPP 1.6 car charger for Charger Management Systems Backend. Mimics a generic OCPP charger and lets Home Assistant set the power and lifetime energy it reports."
-version: "1.31"
+version: "1.4"
 slug: "ocpp_virtual_charger"
 url: "https://github.com/minnp37/Projects/tree/main/ocpp_virtual_charger"
 arch:
